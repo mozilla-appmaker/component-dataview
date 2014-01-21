@@ -1,0 +1,349 @@
+<polymer-element name="ceci-dataview" showdelete="true" showedit="true" attributes="showaddtoitem listschema showkey dataname datascope showedit showdelete" dataname="Items" extends="ceci-element">
+  <template>
+    <link rel="stylesheet" href="component.css">
+    <div id="datascope"></div>
+    <div id="keys-wrapper" >
+      <h2 on-click="{{toggleKeyConfig}}">Configure View</h2>
+      <div id="keys" show="no"></div>
+    </div>
+    <div id="items"></div>
+    <shadow></shadow>
+    <script type="text/json" id="ceci-definition">
+      {
+        "broadcasts": {
+          "editItem": {
+            "label": "Send Item",
+            "description": "Broadcasts a reference to the record when the 'Edit' button is tapped."
+          },
+          "addToItem": {
+            "description": "Broadcasts a reference to the record when the 'Add to' button is tapped.",
+            "label": "Add to Item"
+          },
+          "sendItem": {
+            "description": "Broadcasts a reference to the record when it is tapped.",
+            "label": "View Item"
+          }
+        },
+        "listeners": {
+          "showItem": {
+            "description": "Shows the data for this record.",
+            "label": "Show item"
+          }
+        },
+        "attributes": {
+          "dataname": {
+            "description": "Will try to show this kind of item in the saved data, i.e. 'Cats'",
+            "label": "I show...",
+            "editable": "text"
+          },
+          "showdelete": {
+            "description": "Hides or shows the delete icon for each record.",
+            "label": "Show Delete Link",
+            "editable": "boolean"
+          },
+          "showedit": {
+            "description": "Show 'Edit' button",
+            "label": "Hides or shows the Edit button for each record.",
+            "editable": "boolean"
+          },
+          "showaddtoitem": {
+            "description": "Show 'Add To' Button",
+            "label": "Hides or shows the 'Add to This' button",
+            "editable": "boolean"
+          }
+        }
+      }
+    </script>
+  </template>
+  <description>
+    Listens for a message and counts.
+  </description>
+  <tags>starter,math</tags>
+  <thumbnail>
+    <img src="thumbnail.png" />
+  </thumbnail>
+    <script>
+      Polymer("ceci-dataview", {
+        keyConfig: {},
+        storedData : {},
+        dataChangedEvent : new CustomEvent("storage"),
+        ready: function(){
+          this.super();
+          this.datascope = [];
+        },
+        toggleKeyConfig: function(){
+          var keysEl = this.shadowRoot.querySelector("#keys");
+          if(keysEl.getAttribute("show") == "no") {
+            keysEl.setAttribute("show","yes");
+          } else {
+            keysEl.setAttribute("show","no");
+          }
+        },
+        showdeleteChanged : function(oldValue,newValue){
+          this.showData();
+        },
+        showaddtoitemChanged : function(oldValue,newValue){
+          this.showData();
+        },
+        showeditChanged : function(oldValue,newValue){
+          this.showData();
+        },
+        datanameChanged : function (oldValue, newValue) {
+          this.updateKeyUI();
+          this.showData();
+        },
+        showItem: function(e){
+          this.datascope = e;
+        },
+        datascopeChanged: function(){
+          // If we want to indicate the scope of the data that is shown, there is where we'd do it.
+          // var scopeEl = this.shadowRoot.querySelector("#datascope");
+          this.updateKeyUI();
+          this.showData();
+        },
+        deleteItem: function(id){
+          var self = this;
+
+          var db = JSON.parse(localStorage.getItem("db")) || {};
+          this.storedData = db;
+          for (var i = 0; i < this.datascope.length; i++){
+            var scopeItem = this.datascope[i];
+            this.storedData = this.storedData[scopeItem["dataset"]][scopeItem["index"]];
+          }
+
+          this.storedData = this.storedData[this.dataname] || [];
+          this.storedData.splice(id, 1);
+
+          localStorage.setItem("db", JSON.stringify(db));
+
+          window.dispatchEvent(this.dataChangedEvent);
+        },
+        updateKeyUI : function(){
+
+          // Does this depend on the form schema only? or also on the data?
+          //This builds the UI that lets you choose how each key in the data set is displayed!
+          var self = this;
+
+          // Clears out the old UI
+          this.shadowRoot.querySelector("#keys").innerHTML = "";
+
+          var db = JSON.parse(localStorage.getItem("db")) || {};
+
+          // Tries to grab the stored Data
+          this.storedData = db[this.dataname] || [];
+
+          // Tries to grab it's own keyConfig (which tells it how to render each Key field)
+          this.keyConfig = JSON.parse(this.listschema) || {};
+
+          // Grabs the schema from the form
+          var formSchema = db[this.dataname + "_formschema"] || {};
+
+          // Builds a list of all the keys from the form and data set
+          // To know what to display options for.
+          var keylist = [];
+
+          for(var i = 0; i < this.storedData.length; i++){
+            var item = this.storedData[i];
+            for (var key in item) {
+              if(keylist.indexOf(key) < 0) {
+                keylist.push(key);
+              }
+            }
+          }
+
+          for(var j = 0; j < formSchema.length; j++){
+            var item = formSchema[j];
+            if(keylist.indexOf(item["name"]) < 0 ){
+              keylist.push(item["name"]);
+            }
+          }
+
+          for(var k = 0; k < keylist.length; k++){
+            var key = keylist[k];
+            if(!this.keyConfig[key]) {
+              this.keyConfig[key] = "text";
+            }
+          }
+
+          // CLean up the keyConfig file
+          // Removes everything in the keyConfig that isn't in the keylist anymore.
+          for (var key in this.keyConfig){
+            if(keylist.indexOf(key) < 0) {
+              delete this.keyConfig[key];
+            }
+          }
+
+          // We should also clean up the key config.
+          // we should also get rid of keys that are no longer needed from keyConfig
+          // Like if something is NOT in the keylist, then dump it
+
+          // Have a way to choose how each key is displayed
+          for(var j = 0; j < keylist.length; j ++){
+            var keyConfig = document.createElement("div");
+            keyConfig.classList.add("keyConfig");
+            keyConfig.innerHTML = "Show <strong>" + keylist[j] + "</strong> as ";
+
+            var select =  document.createElement("select");
+            keyConfig.appendChild(select);
+
+            select.setAttribute("key",keylist[j]);
+            select.innerHTML = "<option value='text'>text</option><option value='image'>image</option><option value='hide'>hide</option>";
+            select.value = this.keyConfig[keylist[j]];
+
+            select.addEventListener("change",function(e){
+              self.keyConfig[e.target.getAttribute("key")] = e.target.value;
+              self.showData();
+              self.listschema = JSON.stringify(self.keyConfig);
+            });
+            this.shadowRoot.querySelector("#keys").appendChild(keyConfig);
+          }
+
+          //Put the list schema into the db
+          db[this.dataname + "_listSchema"] = this.keyConfig;
+          localStorage.setItem("db", JSON.stringify(db));
+
+          this.showData();
+        },
+        enteredView : function(){
+          var self = this;
+          //Listens to updates to the data set
+
+          window.addEventListener('storage', this.showData.bind(this), false);
+          window.addEventListener('storage', this.updateKeyUI.bind(this), false);
+          window.addEventListener('formChange', this.updateKeyUI.bind(this), false);
+
+          this.updateKeyUI();
+
+          //Show exising data
+          this.showData();
+          //Update the key UI based on the data set
+
+          this.super();
+        },
+        showData : function(){
+
+          var self = this;
+
+          var db = JSON.parse(localStorage.getItem("db")) || {};
+          this.storedData = db;
+
+          var lastData;
+          for (var i = 0; i < this.datascope.length; i++){
+            var scopeItem = this.datascope[i];
+            this.storedData = this.storedData[scopeItem["dataset"]][scopeItem["index"]];
+            lastData = scopeItem["dataset"];
+          }
+
+          if(lastData == this.dataname){
+            var blam = [];
+            blam.push(this.storedData);
+            this.storedData = blam;
+          } else {
+            this.storedData = this.storedData[this.dataname] || [];
+          }
+
+          var itemList = this.shadowRoot.querySelector("#items");
+          itemList.innerHTML = "";
+
+          for(var i = 0; i < this.storedData.length; i++){
+
+            var item = this.storedData[i];
+            var itemEl = document.createElement("div");
+            itemEl.classList.add("dataGroup");
+
+            for (var key in item) {
+
+              var displayType = self.keyConfig[key];
+              var dataItem;
+
+              if (displayType == "text") {
+                dataItem = document.createElement("div");
+
+                if(typeof item[key] == "object"){
+                  dataItem.innerHTML = "List of " + item[key].length + " " + key;
+                } else {
+                  dataItem.innerHTML = item[key];
+                }
+
+              } else if (displayType == "image") {
+                dataItem = document.createElement("img");
+                dataItem.setAttribute("src", item[key]);
+              } else {
+                dataItem = document.createElement("div");
+              }
+
+              dataItem.classList.add("dataItem");
+
+              dataItem.addEventListener("click",function(e){
+                var nodeList = Array.prototype.slice.call(e.currentTarget.parentNode.parentNode.children);
+                var index = nodeList.indexOf(e.currentTarget.parentNode);
+                var sendScope = JSON.parse(JSON.stringify(self.datascope));
+                var scopeItem = {};
+                scopeItem["dataset"] = self.dataname;
+                scopeItem["index"] = index;
+                sendScope.push(scopeItem);
+                self.broadcast('sendItem', sendScope);
+              });
+
+              if(displayType != "hide") {
+                itemEl.appendChild(dataItem);
+              }
+            }
+
+            if(this.showedit == "true"){
+              var editItem = document.createElement("div");
+              editItem.innerHTML = "Edit";
+              editItem.classList.add("editItem");
+              itemEl.appendChild(editItem);
+              editItem.addEventListener("click",function(e){
+                var nodeList = Array.prototype.slice.call(e.currentTarget.parentNode.parentNode.children);
+                var index = nodeList.indexOf( e.currentTarget.parentNode );
+                var sendScope = JSON.parse(JSON.stringify(self.datascope));
+                var scopeItem = {};
+                scopeItem["dataset"] = self.dataname;
+                scopeItem["index"] = index;
+                sendScope.push(scopeItem);
+                self.broadcast('editItem', sendScope);
+              });
+            }
+
+            if(this.showaddtoitem == "true"){
+              var el = document.createElement("div");
+              el.innerHTML = "Add to this";
+              el.classList.add("addToItem");
+              itemEl.appendChild(el);
+              el.addEventListener("click",function(e){
+                var nodeList = Array.prototype.slice.call(e.currentTarget.parentNode.parentNode.children);
+                var index = nodeList.indexOf( e.currentTarget.parentNode );
+                var sendScope = JSON.parse(JSON.stringify(self.datascope));
+                var scopeItem = {};
+                scopeItem["dataset"] = self.dataname;
+                scopeItem["index"] = index;
+                sendScope.push(scopeItem);
+                self.broadcast('addToItem', sendScope);
+              });
+            }
+
+            if(this.showdelete == "true"){
+              var deleteItem = document.createElement("div");
+              deleteItem.innerHTML = "X";
+              deleteItem.classList.add("deleteItem");
+              itemEl.appendChild(deleteItem);
+              deleteItem.addEventListener("click",function(e){
+
+                var nodeList = Array.prototype.slice.call(e.currentTarget.parentNode.parentNode.children);
+                var index = nodeList.indexOf( e.currentTarget.parentNode );
+
+                self.deleteItem(index);
+
+              });
+            }
+
+            itemList.appendChild(itemEl);
+          }
+
+        }
+
+      });
+    </script>
+</polymer-element>
