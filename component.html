@@ -1,4 +1,4 @@
-<polymer-element name="ceci-dataview" showdelete="true" showedit="true" attributes="showaddtoitem listschema showkey dataname datascope showedit showdelete" dataname="Items" extends="ceci-element">
+<polymer-element name="ceci-dataview-firebase" showdelete="true" showedit="true" attributes="showaddtoitem listschema showkey dataname datascope showedit showdelete" dataname="Items" extends="ceci-element">
   <template>
     <link rel="stylesheet" href="component.css">
     <div id="datascope"></div>
@@ -63,7 +63,7 @@
     <img src="thumbnail.png" />
   </thumbnail>
     <script>
-      Polymer("ceci-dataview", {
+      Polymer("ceci-dataview-firebase", {
         keyConfig: {},
         storedData : {},
         dataChangedEvent : new CustomEvent("storage"),
@@ -224,23 +224,36 @@
 
           var self = this;
 
-          var db = JSON.parse(localStorage.getItem("db")) || {};
-          this.storedData = db;
+//          var db = JSON.parse(localStorage.getItem("db")) || {};
+            //this.storedData = db;
+            var ceciapp = document.querySelector("ceci-app");
+            var firebase = ceciapp.getFirebase();
 
-          var lastData;
-          for (var i = 0; i < this.datascope.length; i++){
-            var scopeItem = this.datascope[i];
-            this.storedData = this.storedData[scopeItem["dataset"]][scopeItem["index"]];
-            lastData = scopeItem["dataset"];
-          }
+          var fb_data = []
+          firebase.child("form-data/"+this.dataname).once("value", function(a) {
+              var data = a.val();
+                  var keys = Object.keys(a.val())
+                  keys.forEach(function(key){
+                      fb_data.push(a.val()[key])
+                  })
+          })
+            console.log("this.storedData")
+            console.log(fb_data)
 
-          if(lastData == this.dataname){
-            var blam = [];
-            blam.push(this.storedData);
-            this.storedData = blam;
-          } else {
-            this.storedData = this.storedData[this.dataname] || [];
-          }
+//          var lastData;
+//          for (var i = 0; i < this.datascope.length; i++){
+//            var scopeItem = this.datascope[i];
+//            this.storedData = this.storedData[scopeItem["dataset"]][scopeItem["index"]];
+//            lastData = scopeItem["dataset"];
+//          }
+//
+//          if(lastData == this.dataname){
+//            var blam = [];
+//            blam.push(this.storedData);
+//            this.storedData = blam;
+//          } else {
+//            this.storedData = this.storedData[this.dataname] || [];
+//          }
 
           var itemList = this.shadowRoot.querySelector("#items");
           itemList.innerHTML = "";
