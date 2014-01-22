@@ -235,12 +235,8 @@
             var firebase = ceciapp.getFirebase();
 
           //stored data is an object, create a key based on this.dataname and set its val as an empty array
-
-          console.log("self.dataname: " + self.dataname);
             self.storedData = {} //shouldn't have to do this, it begins as an object but is being coereced to an array somewhere else
             self.storedData[self.dataname] = []
-            console.log("self.storedData")
-            console.log(self.storedData)
           firebase.child("form-data/"+self.dataname).once("value", function(a) {
               var data = a.val()
               if(data){
@@ -250,23 +246,22 @@
                   })
               }
 
-              console.log("self.storedData")
               console.log(self.storedData)
 
 
               var lastData;
-              for (var i = 0; i < this.datascope.length; i++){
-                  var scopeItem = this.datascope[i];
-                  this.storedData = this.storedData[scopeItem["dataset"]][scopeItem["index"]];
+              for (var i = 0; i < self.datascope.length; i++){
+                  var scopeItem = self.datascope[i];
+                  self.storedData = self.storedData[scopeItem["dataset"]][scopeItem["index"]];
                   lastData = scopeItem["dataset"];
               }
 
-              if(lastData == this.dataname){
+              if(lastData == self.dataname){
                   var blam = [];
-                  blam.push(this.storedData);
-                  this.storedData = blam;
+                  blam.push(self.storedData);
+                  self.storedData = blam;
               } else {
-                  this.storedData = this.storedData[this.dataname] || [];
+                  self.storedData = self.storedData[self.dataname] || [];
               }
 
               var itemList = self.shadowRoot.querySelector("#items");
@@ -317,7 +312,7 @@
                       }
                   }
 
-                  if(this.showedit == "true"){
+                  if(self.showedit == "true"){
                       var editItem = document.createElement("div");
                       editItem.innerHTML = "Edit";
                       editItem.classList.add("editItem");
@@ -334,7 +329,7 @@
                       });
                   }
 
-                  if(this.showaddtoitem == "true"){
+                  if(self.showaddtoitem == "true"){
                       var el = document.createElement("div");
                       el.innerHTML = "Add to this";
                       el.classList.add("addToItem");
@@ -351,7 +346,7 @@
                       });
                   }
 
-                  if(this.showdelete == "true"){
+                  if(self.showdelete == "true"){
                       var deleteItem = document.createElement("div");
                       deleteItem.innerHTML = "X";
                       deleteItem.classList.add("deleteItem");
