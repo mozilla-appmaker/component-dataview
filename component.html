@@ -104,8 +104,22 @@ Polymer("ceci-dataview-firebase", {
     deleteItem: function(id){
         var self = this;
 
+        var ca = document.querySelector("ceci-app");
+        if(!ca){
+            window.addEventListener("CeciDataConnectionLoaded", function(){
+                console.log("received CeciDataConnectionLoaded event")
+                self._deleteItemFirebase(id);
+            })
+        } else {
+            if(ca.getFirebase()){
+                this._deleteItemFirebase(id);
+            }
+        }
+    },
+    _deleteItemFirebase: function(id){
         //var db = JSON.parse(localStorage.getItem("db")) || {};
-        document.querySelector("ceci-app").getFirebaseObject('form-data', this.dataname, function(data){
+        var ca = document.querySelector("ceci-app")
+        ca.getFirebaseObject('form-data', this.dataname, function(data){
             self.storedData = data || {};
             for (var i = 0; i < self.datascope.length; i++){
                 var scopeItem = self.datascope[i];
@@ -116,12 +130,27 @@ Polymer("ceci-dataview-firebase", {
             self.storedData.splice(id, 1);
 
             //localStorage.setItem("db", JSON.stringify(db));
-            document.querySelector("ceci-app").setFirebaseObject('form-data/' + self.dataname, self.storedData);
+            document.querySelector("ceci-app").setFirebaseObject('form-data', self.storedData);
 
             window.dispatchEvent(this.dataChangedEvent);
         });
     },
-    updateKeyUI : function(){
+    updateKeyUI: function(){
+        var self = this;
+
+        var ca = document.querySelector("ceci-app");
+        if(!ca){
+            window.addEventListener("CeciDataConnectionLoaded", function(){
+                console.log("received CeciDataConnectionLoaded event")
+                self._updateKeyUIFirebase();
+            })
+        } else {
+            if(ca.getFirebase()){
+                this._updateKeyUIFirebase();
+            }
+        }
+    },
+    _updateKeyUIFirebase : function(){
 
         // Does this depend on the form schema only? or also on the data?
         //This builds the UI that lets you choose how each key in the data set is displayed!
@@ -130,7 +159,6 @@ Polymer("ceci-dataview-firebase", {
         // Clears out the old UI
         this.shadowRoot.querySelector("#keys").innerHTML = "";
 
-        //var db = JSON.parse(localStorage.getItem("db")) || {};
         document.querySelector("ceci-app").getFirebaseObject('form-data',this.dataname, function(data){
             // Tries to grab the stored Data
             var db = data || {};
@@ -205,7 +233,7 @@ Polymer("ceci-dataview-firebase", {
             //Put the list schema into the db
             db[self.dataname + "_listSchema"] = self.keyConfig;
             //localStorage.setItem("db", JSON.stringify(db));
-            document.querySelector("ceci-app").setFirebaseObject('form-data/' + self.dataname, db);
+            document.querySelector("ceci-app").setFirebaseObject('form-data', db);
 
             self.showData();
         });
@@ -226,7 +254,22 @@ Polymer("ceci-dataview-firebase", {
 
         this.super();
     },
-    showData : function(){
+    showData: function(){
+        var self = this;
+
+            var ca = document.querySelector("ceci-app");
+            if(!ca){
+                window.addEventListener("CeciDataConnectionLoaded", function(){
+                    console.log("received CeciDataConnectionLoaded event")
+                    self._showDataFirebase();
+                })
+            } else {
+                if(ca.getFirebase()){
+                    this._showDataFirebase();
+                }
+            }
+    },
+    _showDataFirebase : function(){
 
         var self = this;
 
@@ -349,10 +392,7 @@ Polymer("ceci-dataview-firebase", {
                 itemList.appendChild(itemEl);
             }
         });
-
-
     }
-
 });
 </script>
 </polymer-element>
