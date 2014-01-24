@@ -103,7 +103,7 @@ Polymer("ceci-dataview-firebase", {
     },
     deleteItem: function(id){
         var self = this;
-
+        console.log("dataview-deleteItem");
         var ca = document.querySelector("ceci-app");
         if(!ca){
             window.addEventListener("CeciDataConnectionLoaded", function(){
@@ -131,7 +131,7 @@ Polymer("ceci-dataview-firebase", {
 
             ca.setFirebaseObject('form-data/'+self.dataname, self.storedData);
 
-            window.dispatchEvent(this.dataChangedEvent);
+            window.dispatchEvent(self.dataChangedEvent);
         });
     },
     updateKeyUI: function(){
@@ -294,6 +294,7 @@ Polymer("ceci-dataview-firebase", {
             var itemList = self.shadowRoot.querySelector("#items");
             itemList.innerHTML = "";
 
+            var that = self;
             for(var i = 0; i < self.storedData.length; i++){
 
                 var item = self.storedData[i];
@@ -326,12 +327,12 @@ Polymer("ceci-dataview-firebase", {
                     dataItem.addEventListener("click",function(e){
                         var nodeList = Array.prototype.slice.call(e.currentTarget.parentNode.parentNode.children);
                         var index = nodeList.indexOf(e.currentTarget.parentNode);
-                        var sendScope = JSON.parse(JSON.stringify(self.datascope));
+                        var sendScope = JSON.parse(JSON.stringify(that.datascope));
                         var scopeItem = {};
-                        scopeItem["dataset"] = self.dataname;
+                        scopeItem["dataset"] = that.dataname;
                         scopeItem["index"] = index;
                         sendScope.push(scopeItem);
-                        self.broadcast('sendItem', sendScope);
+                        that.broadcast('sendItem', sendScope);
                     });
 
                     if(displayType != "hide") {
@@ -347,12 +348,12 @@ Polymer("ceci-dataview-firebase", {
                     editItem.addEventListener("click",function(e){
                         var nodeList = Array.prototype.slice.call(e.currentTarget.parentNode.parentNode.children);
                         var index = nodeList.indexOf( e.currentTarget.parentNode );
-                        var sendScope = JSON.parse(JSON.stringify(self.datascope));
+                        var sendScope = JSON.parse(JSON.stringify(that.datascope));
                         var scopeItem = {};
-                        scopeItem["dataset"] = self.dataname;
+                        scopeItem["dataset"] = that.dataname;
                         scopeItem["index"] = index;
                         sendScope.push(scopeItem);
-                        self.broadcast('editItem', sendScope);
+                        that.broadcast('editItem', sendScope);
                     });
                 }
 
@@ -364,12 +365,12 @@ Polymer("ceci-dataview-firebase", {
                     el.addEventListener("click",function(e){
                         var nodeList = Array.prototype.slice.call(e.currentTarget.parentNode.parentNode.children);
                         var index = nodeList.indexOf( e.currentTarget.parentNode );
-                        var sendScope = JSON.parse(JSON.stringify(self.datascope));
+                        var sendScope = JSON.parse(JSON.stringify(that.datascope));
                         var scopeItem = {};
-                        scopeItem["dataset"] = self.dataname;
+                        scopeItem["dataset"] = that.dataname;
                         scopeItem["index"] = index;
                         sendScope.push(scopeItem);
-                        self.broadcast('addToItem', sendScope);
+                        that.broadcast('addToItem', sendScope);
                     });
                 }
 
@@ -379,12 +380,9 @@ Polymer("ceci-dataview-firebase", {
                     deleteItem.classList.add("deleteItem");
                     itemEl.appendChild(deleteItem);
                     deleteItem.addEventListener("click",function(e){
-
                         var nodeList = Array.prototype.slice.call(e.currentTarget.parentNode.parentNode.children);
                         var index = nodeList.indexOf( e.currentTarget.parentNode );
-
-                        self.deleteItem(index);
-
+                        that.deleteItem(index);
                     });
                 }
 
