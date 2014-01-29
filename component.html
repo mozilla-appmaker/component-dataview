@@ -105,13 +105,11 @@ Polymer("ceci-dataview", {
   },
   deleteItem: function(id){
     var self = this;
-    console.log("dataview-deleteItem");
     var ca = document.querySelector("ceci-app");
     if(!ca){
       window.addEventListener("CeciDataConnectionLoaded", function(){
-        console.log("received CeciDataConnectionLoaded event")
         self._deleteItemFirebase(id);
-      })
+      });
     } else {
       if(ca.firebase){
         this._deleteItemFirebase(id);
@@ -140,7 +138,6 @@ Polymer("ceci-dataview", {
     var ca = document.querySelector("ceci-app");
     if(!ca){
       window.addEventListener("CeciDataConnectionLoaded", function(){
-        console.log("received CeciDataConnectionLoaded event")
         self._updateKeyUIFirebase();
       })
     } else {
@@ -252,7 +249,6 @@ Polymer("ceci-dataview", {
     var ca = document.querySelector("ceci-app");
     if(!ca){
       window.addEventListener("CeciDataConnectionLoaded", function(){
-        console.log("received CeciDataConnectionLoaded event")
         self._showDataFirebase();
       })
     } else {
@@ -262,7 +258,6 @@ Polymer("ceci-dataview", {
     }
   },
   _showDataFirebase : function(){
-    console.log("showData")
     var self = this;
 
     document.querySelector("ceci-app").getFirebaseObject('form-data', "", function(data){
