@@ -1,4 +1,4 @@
 {
-	"ceci-dataview-firebase": "Dataview Firebase",
-	"ceci-dataview-firebase/description": "Display any data you have created using forms made with addform-firebase that is stored in Firebase."
+	"ceci-dataview-firebase": "Dataview",
+	"ceci-dataview-firebase/description": "Display any data you have created using forms made with addform component."
 }
