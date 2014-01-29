@@ -10,6 +10,8 @@
   <shadow></shadow>
   <script type="text/json" id="ceci-definition">
   {
+    "thumbnail": "./thumbnail.png",
+    "description": "Display any data you have created using forms made with addform component."
     "broadcasts": {
       "editItem": {
         "label": "Send Item",
@@ -55,15 +57,9 @@
   }
   </script>
 </template>
-<description>
-  Listens for a message and counts.
-</description>
-<tags>starter,math</tags>
-<thumbnail>
-  <img src="thumbnail.png" />
-</thumbnail>
+<tags>data</tags>
 <script>
-Polymer("ceci-dataview-firebase", {
+Polymer("ceci-dataview", {
   keyConfig: {},
   storedData : {},
   dataChangedEvent : new CustomEvent("storage"),
@@ -73,309 +69,308 @@ Polymer("ceci-dataview-firebase", {
   },
   toggleKeyConfig: function(){
     var keysEl = this.shadowRoot.querySelector("#keys");
-      if(keysEl.getAttribute("show") == "no") {
-        keysEl.setAttribute("show","yes");
-      } else {
-        keysEl.setAttribute("show","no");
+    if(keysEl.getAttribute("show") == "no") {
+      keysEl.setAttribute("show","yes");
+    } else {
+      keysEl.setAttribute("show","no");
+    }
+  },
+  showdeleteChanged : function(oldValue,newValue){
+    this.showData();
+  },
+  showaddtoitemChanged : function(oldValue,newValue){
+    this.showData();
+  },
+  showeditChanged : function(oldValue,newValue){
+    this.showData();
+  },
+  datanameChanged : function (oldValue, newValue) {
+    this.updateKeyUI();
+    this.showData();
+  },
+  showItem: function(e){
+    this.datascope = e;
+  },
+  datascopeChanged: function(){
+    // If we want to indicate the scope of the data that is shown, there is where we'd do it.
+    // var scopeEl = this.shadowRoot.querySelector("#datascope");
+    this.updateKeyUI();
+    this.showData();
+  },
+  deleteItem: function(id){
+    var self = this;
+    console.log("dataview-deleteItem");
+    var ca = document.querySelector("ceci-app");
+    if(!ca){
+      window.addEventListener("CeciDataConnectionLoaded", function(){
+        console.log("received CeciDataConnectionLoaded event")
+        self._deleteItemFirebase(id);
+      })
+    } else {
+      if(ca.firebase){
+        this._deleteItemFirebase(id);
       }
-    },
-    showdeleteChanged : function(oldValue,newValue){
-      this.showData();
-    },
-    showaddtoitemChanged : function(oldValue,newValue){
-      this.showData();
-    },
-    showeditChanged : function(oldValue,newValue){
-      this.showData();
-    },
-    datanameChanged : function (oldValue, newValue) {
-      this.updateKeyUI();
-      this.showData();
-    },
-    showItem: function(e){
-      this.datascope = e;
-    },
-    datascopeChanged: function(){
-      // If we want to indicate the scope of the data that is shown, there is where we'd do it.
-      // var scopeEl = this.shadowRoot.querySelector("#datascope");
-      this.updateKeyUI();
-      this.showData();
-    },
-    deleteItem: function(id){
-      var self = this;
-      console.log("dataview-deleteItem");
-      var ca = document.querySelector("ceci-app");
-      if(!ca){
-        window.addEventListener("CeciDataConnectionLoaded", function(){
-          console.log("received CeciDataConnectionLoaded event")
-          self._deleteItemFirebase(id);
-        })
-      } else {
-        if(ca.getFirebase()){
-          this._deleteItemFirebase(id);
-        }
+    }
+  },
+  _deleteItemFirebase: function(id){
+    var self = this;
+    var ca = document.querySelector("ceci-app")
+    ca.getFirebaseObject('form-data', "", function(data){
+      self.storedData = data || {};
+      for (var i = 0; i < self.datascope.length; i++){
+        var scopeItem = self.datascope[i];
+        self.storedData = self.storedData[scopeItem["dataset"]][scopeItem["index"]];
       }
-    },
-    _deleteItemFirebase: function(id){
-      var self = this;
-      var ca = document.querySelector("ceci-app")
-      ca.getFirebaseObject('form-data', "", function(data){
-        self.storedData = data || {};
-        for (var i = 0; i < self.datascope.length; i++){
-          var scopeItem = self.datascope[i];
-          self.storedData = self.storedData[scopeItem["dataset"]][scopeItem["index"]];
-        }
 
-        self.storedData = self.storedData[self.dataname] || [];
-        self.storedData.splice(id, 1);
-        ca.setFirebaseObject('form-data/'+self.dataname, self.storedData);
-        window.dispatchEvent(self.dataChangedEvent);
-      });
-    },
-    updateKeyUI: function(){
-      var self = this;
+      self.storedData = self.storedData[self.dataname] || [];
+      self.storedData.splice(id, 1);
+      ca.setFirebaseObject('form-data/'+self.dataname, self.storedData);
+      window.dispatchEvent(self.dataChangedEvent);
+    });
+  },
+  updateKeyUI: function(){
+    var self = this;
 
-      var ca = document.querySelector("ceci-app");
-      if(!ca){
-        window.addEventListener("CeciDataConnectionLoaded", function(){
-          console.log("received CeciDataConnectionLoaded event")
-          self._updateKeyUIFirebase();
-        })
-      } else {
-        if(ca.getFirebase()){
-          this._updateKeyUIFirebase();
-        }
+    var ca = document.querySelector("ceci-app");
+    if(!ca){
+      window.addEventListener("CeciDataConnectionLoaded", function(){
+        console.log("received CeciDataConnectionLoaded event")
+        self._updateKeyUIFirebase();
+      })
+    } else {
+      if(ca.firebase){
+        this._updateKeyUIFirebase();
       }
-    },
-    _updateKeyUIFirebase : function(){
-      //This builds the UI that lets you choose how each key in the data set is displayed!
-      var self = this;
+    }
+  },
+  _updateKeyUIFirebase : function(){
+    //This builds the UI that lets you choose how each key in the data set is displayed!
+    var self = this;
 
-      // Clears out the old UI
-      this.shadowRoot.querySelector("#keys").innerHTML = "";
+    // Clears out the old UI
+    this.shadowRoot.querySelector("#keys").innerHTML = "";
 
-      document.querySelector("ceci-app").getFirebaseObject('form-data',"", function(data){
-        // Tries to grab the stored Data
-        var db = data || {};
-        self.storedData = db[self.dataname] || [];
+    document.querySelector("ceci-app").getFirebaseObject('form-data',"", function(data){
+      // Tries to grab the stored Data
+      var db = data || {};
+      self.storedData = db[self.dataname] || [];
 
-        // Tries to grab it's own keyConfig (which tells it how to render each Key field)
-        self.keyConfig = JSON.parse(self.listschema) || {};
+      // Tries to grab it's own keyConfig (which tells it how to render each Key field)
+      self.keyConfig = JSON.parse(self.listschema) || {};
 
-        // Grabs the schema from the form
-        var formSchema = db[self.dataname + "_formschema"] || {};
+      // Grabs the schema from the form
+      var formSchema = db[self.dataname + "_formschema"] || {};
 
-        // Builds a list of all the keys from the form and data set
-        // To know what to display options for.
-        var keylist = [];
-        for(var i = 0; i < self.storedData.length; i++){
-          var item = self.storedData[i];
-          for (var key in item) {
-            if(keylist.indexOf(key) < 0) {
-              keylist.push(key);
-            }
-          }
-        }
-
-        for(var j = 0; j < formSchema.length; j++){
-          var item = formSchema[j];
-          if(keylist.indexOf(item["name"]) < 0 ){
-            keylist.push(item["name"]);
-          }
-        }
-
-        for(var k = 0; k < keylist.length; k++){
-          var key = keylist[k];
-          if(!self.keyConfig[key]) {
-            self.keyConfig[key] = "text";
-          }
-        }
-
-        // CLean up the keyConfig file
-        // Removes everything in the keyConfig that isn't in the keylist anymore.
-        for (var key in self.keyConfig){
+      // Builds a list of all the keys from the form and data set
+      // To know what to display options for.
+      var keylist = [];
+      for(var i = 0; i < self.storedData.length; i++){
+        var item = self.storedData[i];
+        for (var key in item) {
           if(keylist.indexOf(key) < 0) {
-            delete self.keyConfig[key];
+            keylist.push(key);
           }
-        }
-
-        // We should also clean up the key config.
-        // we should also get rid of keys that are no longer needed from keyConfig
-        // Like if something is NOT in the keylist, then dump it
-
-        // Have a way to choose how each key is displayed
-        for(var j = 0; j < keylist.length; j ++){
-          var keyConfig = document.createElement("div");
-          keyConfig.classList.add("keyConfig");
-          keyConfig.innerHTML = "Show <strong>" + keylist[j] + "</strong> as ";
-
-          var select =  document.createElement("select");
-          keyConfig.appendChild(select);
-
-          select.setAttribute("key",keylist[j]);
-          select.innerHTML = "<option value='text'>text</option><option value='image'>image</option><option value='hide'>hide</option>";
-          select.value = self.keyConfig[keylist[j]];
-
-          select.addEventListener("change",function(e){
-            self.keyConfig[e.target.getAttribute("key")] = e.target.value;
-            self.showData();
-            self.listschema = JSON.stringify(self.keyConfig);
-          });
-          self.shadowRoot.querySelector("#keys").appendChild(keyConfig);
-        }
-
-        //Put the list schema into the db
-        db[self.dataname + "_listSchema"] = self.keyConfig;
-        document.querySelector("ceci-app").setFirebaseObject('form-data', db);
-        self.showData();
-      });
-    },
-    enteredView : function(){
-      var self = this;
-
-      //Listens to updates to the data set
-      window.addEventListener('storage', this.showData.bind(this), false);
-      window.addEventListener('storage', this.updateKeyUI.bind(this), false);
-      window.addEventListener('formChange', this.updateKeyUI.bind(this), false);
-
-      this.updateKeyUI();
-
-      //Show exising data
-      this.showData();
-      this.super();
-    },
-    showData: function(){
-      var self = this;
-
-      var ca = document.querySelector("ceci-app");
-      if(!ca){
-        window.addEventListener("CeciDataConnectionLoaded", function(){
-          console.log("received CeciDataConnectionLoaded event")
-          self._showDataFirebase();
-        })
-      } else {
-        if(ca.getFirebase()){
-          this._showDataFirebase();
         }
       }
-    },
-    _showDataFirebase : function(){
-      console.log("showData")
-      var self = this;
 
-      //var db = JSON.parse(localStorage.getItem("db")) || {};
-      document.querySelector("ceci-app").getFirebaseObject('form-data', "", function(data){
-        self.storedData = data || {};
-
-        var lastData;
-        for (var i = 0; i < self.datascope.length; i++){
-          var scopeItem = self.datascope[i];
-          self.storedData = self.storedData[scopeItem["dataset"]][scopeItem["index"]];
-          lastData = scopeItem["dataset"];
+      for(var j = 0; j < formSchema.length; j++){
+        var item = formSchema[j];
+        if(keylist.indexOf(item["name"]) < 0 ){
+          keylist.push(item["name"]);
         }
+      }
 
-        if(lastData == self.dataname){
-          var blam = [];
-          blam.push(self.storedData);
-          self.storedData = blam;
-        } else {
-          self.storedData = self.storedData[self.dataname] || [];
+      for(var k = 0; k < keylist.length; k++){
+        var key = keylist[k];
+        if(!self.keyConfig[key]) {
+          self.keyConfig[key] = "text";
         }
+      }
 
-        var itemList = self.shadowRoot.querySelector("#items");
-        itemList.innerHTML = "";
+      // CLean up the keyConfig file
+      // Removes everything in the keyConfig that isn't in the keylist anymore.
+      for (var key in self.keyConfig){
+        if(keylist.indexOf(key) < 0) {
+          delete self.keyConfig[key];
+        }
+      }
 
-        var that = self;
-        for(var i = 0; i < self.storedData.length; i++){
-          var item = self.storedData[i];
-          var itemEl = document.createElement("div");
-          itemEl.classList.add("dataGroup");
+      // We should also clean up the key config.
+      // we should also get rid of keys that are no longer needed from keyConfig
+      // Like if something is NOT in the keylist, then dump it
 
-          for (var key in item) {
-            var displayType = self.keyConfig[key];
-            var dataItem;
+      // Have a way to choose how each key is displayed
+      for(var j = 0; j < keylist.length; j ++){
+        var keyConfig = document.createElement("div");
+        keyConfig.classList.add("keyConfig");
+        keyConfig.innerHTML = "Show <strong>" + keylist[j] + "</strong> as ";
 
-            if (displayType == "text") {
-              dataItem = document.createElement("div");
+        var select =  document.createElement("select");
+        keyConfig.appendChild(select);
 
-              if(typeof item[key] == "object"){
-                dataItem.innerHTML = "List of " + item[key].length + " " + key;
-              } else {
-                dataItem.innerHTML = item[key];
-              }
-            } else if (displayType == "image") {
-              dataItem = document.createElement("img");
-              dataItem.setAttribute("src", item[key]);
+        select.setAttribute("key",keylist[j]);
+        select.innerHTML = "<option value='text'>text</option><option value='image'>image</option><option value='hide'>hide</option>";
+        select.value = self.keyConfig[keylist[j]];
+
+        select.addEventListener("change",function(e){
+          self.keyConfig[e.target.getAttribute("key")] = e.target.value;
+          self.showData();
+          self.listschema = JSON.stringify(self.keyConfig);
+        });
+        self.shadowRoot.querySelector("#keys").appendChild(keyConfig);
+      }
+
+      //Put the list schema into the db
+      db[self.dataname + "_listSchema"] = self.keyConfig;
+      document.querySelector("ceci-app").setFirebaseObject('form-data', db);
+      self.showData();
+    });
+  },
+  enteredView : function(){
+    var self = this;
+
+    //Listens to updates to the data set
+    window.addEventListener('storage', this.showData.bind(this), false);
+    window.addEventListener('storage', this.updateKeyUI.bind(this), false);
+    window.addEventListener('formChange', this.updateKeyUI.bind(this), false);
+
+    this.updateKeyUI();
+
+    //Show exising data
+    this.showData();
+    this.super();
+  },
+  showData: function(){
+    var self = this;
+
+    var ca = document.querySelector("ceci-app");
+    if(!ca){
+      window.addEventListener("CeciDataConnectionLoaded", function(){
+        console.log("received CeciDataConnectionLoaded event")
+        self._showDataFirebase();
+      })
+    } else {
+      if(ca.firebase){
+        this._showDataFirebase();
+      }
+    }
+  },
+  _showDataFirebase : function(){
+    console.log("showData")
+    var self = this;
+
+    document.querySelector("ceci-app").getFirebaseObject('form-data', "", function(data){
+      self.storedData = data || {};
+
+      var lastData;
+      for (var i = 0; i < self.datascope.length; i++){
+        var scopeItem = self.datascope[i];
+        self.storedData = self.storedData[scopeItem["dataset"]][scopeItem["index"]];
+        lastData = scopeItem["dataset"];
+      }
+
+      if(lastData == self.dataname){
+        var blam = [];
+        blam.push(self.storedData);
+        self.storedData = blam;
+      } else {
+        self.storedData = self.storedData[self.dataname] || [];
+      }
+
+      var itemList = self.shadowRoot.querySelector("#items");
+      itemList.innerHTML = "";
+
+      var that = self;
+      for(var i = 0; i < self.storedData.length; i++){
+        var item = self.storedData[i];
+        var itemEl = document.createElement("div");
+        itemEl.classList.add("dataGroup");
+
+        for (var key in item) {
+          var displayType = self.keyConfig[key];
+          var dataItem;
+
+          if (displayType == "text") {
+            dataItem = document.createElement("div");
+
+            if(typeof item[key] == "object"){
+              dataItem.innerHTML = "List of " + item[key].length + " " + key;
             } else {
-              dataItem = document.createElement("div");
+              dataItem.innerHTML = item[key];
             }
-
-            dataItem.classList.add("dataItem");
-
-            dataItem.addEventListener("click",function(e){
-              var nodeList = Array.prototype.slice.call(e.currentTarget.parentNode.parentNode.children);
-              var index = nodeList.indexOf(e.currentTarget.parentNode);
-              var sendScope = JSON.parse(JSON.stringify(that.datascope));
-              var scopeItem = {};
-              scopeItem["dataset"] = that.dataname;
-              scopeItem["index"] = index;
-              sendScope.push(scopeItem);
-              that.broadcast('sendItem', sendScope);
-            });
-
-            if(displayType != "hide") {
-                itemEl.appendChild(dataItem);
-            }
+          } else if (displayType == "image") {
+            dataItem = document.createElement("img");
+            dataItem.setAttribute("src", item[key]);
+          } else {
+            dataItem = document.createElement("div");
           }
 
-          if(self.showedit == "true"){
-              var editItem = document.createElement("div");
-              editItem.innerHTML = "Edit";
-              editItem.classList.add("editItem");
-              itemEl.appendChild(editItem);
-              editItem.addEventListener("click",function(e){
-                  var nodeList = Array.prototype.slice.call(e.currentTarget.parentNode.parentNode.children);
-                  var index = nodeList.indexOf( e.currentTarget.parentNode );
-                  var sendScope = JSON.parse(JSON.stringify(that.datascope));
-                  var scopeItem = {};
-                  scopeItem["dataset"] = that.dataname;
-                  scopeItem["index"] = index;
-                  sendScope.push(scopeItem);
-                  that.broadcast('editItem', sendScope);
-              });
-          }
+          dataItem.classList.add("dataItem");
 
-          if(self.showaddtoitem == "true"){
-              var el = document.createElement("div");
-              el.innerHTML = "Add to self";
-              el.classList.add("addToItem");
-              itemEl.appendChild(el);
-              el.addEventListener("click",function(e){
-                  var nodeList = Array.prototype.slice.call(e.currentTarget.parentNode.parentNode.children);
-                  var index = nodeList.indexOf( e.currentTarget.parentNode );
-                  var sendScope = JSON.parse(JSON.stringify(that.datascope));
-                  var scopeItem = {};
-                  scopeItem["dataset"] = that.dataname;
-                  scopeItem["index"] = index;
-                  sendScope.push(scopeItem);
-                  that.broadcast('addToItem', sendScope);
-              });
-          }
+          dataItem.addEventListener("click",function(e){
+            var nodeList = Array.prototype.slice.call(e.currentTarget.parentNode.parentNode.children);
+            var index = nodeList.indexOf(e.currentTarget.parentNode);
+            var sendScope = JSON.parse(JSON.stringify(that.datascope));
+            var scopeItem = {};
+            scopeItem["dataset"] = that.dataname;
+            scopeItem["index"] = index;
+            sendScope.push(scopeItem);
+            that.broadcast('sendItem', sendScope);
+          });
 
-          if(self.showdelete == "true"){
-              var deleteItem = document.createElement("div");
-              deleteItem.innerHTML = "X";
-              deleteItem.classList.add("deleteItem");
-              itemEl.appendChild(deleteItem);
-              deleteItem.addEventListener("click",function(e){
-                  var nodeList = Array.prototype.slice.call(e.currentTarget.parentNode.parentNode.children);
-                  var index = nodeList.indexOf( e.currentTarget.parentNode );
-                  that.deleteItem(index);
-              });
+          if(displayType != "hide") {
+            itemEl.appendChild(dataItem);
           }
-
-          itemList.appendChild(itemEl);
         }
+
+        if(self.showedit == "true"){
+          var editItem = document.createElement("div");
+          editItem.innerHTML = "Edit";
+          editItem.classList.add("editItem");
+          itemEl.appendChild(editItem);
+          editItem.addEventListener("click",function(e){
+            var nodeList = Array.prototype.slice.call(e.currentTarget.parentNode.parentNode.children);
+            var index = nodeList.indexOf( e.currentTarget.parentNode );
+            var sendScope = JSON.parse(JSON.stringify(that.datascope));
+            var scopeItem = {};
+            scopeItem["dataset"] = that.dataname;
+            scopeItem["index"] = index;
+            sendScope.push(scopeItem);
+            that.broadcast('editItem', sendScope);
+          });
+        }
+
+        if(self.showaddtoitem == "true"){
+          var el = document.createElement("div");
+          el.innerHTML = "Add to self";
+          el.classList.add("addToItem");
+          itemEl.appendChild(el);
+          el.addEventListener("click",function(e){
+            var nodeList = Array.prototype.slice.call(e.currentTarget.parentNode.parentNode.children);
+            var index = nodeList.indexOf( e.currentTarget.parentNode );
+            var sendScope = JSON.parse(JSON.stringify(that.datascope));
+            var scopeItem = {};
+            scopeItem["dataset"] = that.dataname;
+            scopeItem["index"] = index;
+            sendScope.push(scopeItem);
+            that.broadcast('addToItem', sendScope);
+          });
+        }
+
+        if(self.showdelete == "true"){
+          var deleteItem = document.createElement("div");
+          deleteItem.innerHTML = "X";
+          deleteItem.classList.add("deleteItem");
+          itemEl.appendChild(deleteItem);
+          deleteItem.addEventListener("click",function(e){
+            var nodeList = Array.prototype.slice.call(e.currentTarget.parentNode.parentNode.children);
+            var index = nodeList.indexOf( e.currentTarget.parentNode );
+            that.deleteItem(index);
+          });
+        }
+
+        itemList.appendChild(itemEl);
+      }
     });
   }
 });
