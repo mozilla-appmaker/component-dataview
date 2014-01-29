@@ -1,18 +1,18 @@
-component-counter
+component-dataview
 ================
 
-[![Build Status](https://travis-ci.org/mozilla-appmaker/component-counter.png)](https://travis-ci.org/mozilla-appmaker/component-counter)
+[![Build Status](https://travis-ci.org/mozilla-appmaker/component-addform.png)](https://travis-ci.org/mozilla-appmaker/component-addform)
 
 Basic counter component for [Appmaker](https://github.com/mozilla-appmaker/appmaker).
 
 Appmaker import:
 ```
-<link rel="import" href="/component-counter">
+<link rel="import" href="/component-addform">
 ```
 
 # Test Status
 
-See the github page http://mozilla-appmaker.github.io/component-counter/ for test status.
+See the github page http://mozilla-appmaker.github.io/component-addform/ for test status.
 
 # Installation
 `component.html` can be served from this repo without any setup. However, `Polymer` and `ceci-element` must be exposed for the component to function. The instructions below detail a full development/testing environment.
@@ -27,7 +27,7 @@ cd mozilla-appmaker
 
 Clone this repo:
 ```
-git clone git@github.com:mozilla-appmaker/component-counter.git
+git clone git@github.com:mozilla-appmaker/component-addform.git
 ```
 
 Clone the `tools` repo:
@@ -40,17 +40,17 @@ Clone the `appmaker` repo, which will provide foundational appmaker components:
 git clone git@github.com:mozilla-appmaker/appmaker.git
 ```
 
-Your directory structure should look like this (more component repos can be cloned as siblings of `component-counter`):
+Your directory structure should look like this (more component repos can be cloned as siblings of `component-addform`):
 ```
 mozilla-appmaker/
   ├── appmaker/
-  ├── component-counter/
+  ├── component-addform/
   └── tools/
 ```
 
-Enter the `component-counter` directory, and install npm dependencies
+Enter the `component-addform` directory, and install npm dependencies
 ```
-cd component-counter
+cd component-addform
 npm install
 ```
 
@@ -64,7 +64,7 @@ Include this component in your appmaker app using Polymer's `<link>` import tag:
 
 In appmaker, this component is available using gh-pages:
 ```
-<link rel="import" href="/component-counter">
+<link rel="import" href="/component-addform">
 ```
 
 # Testing
