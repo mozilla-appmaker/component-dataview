@@ -243,52 +243,61 @@ Polymer("ceci-dataview", {
     this.showData();
     this.super();
   },
-  showData: function(){
-    var self = this;
-
-    var ca = document.querySelector("ceci-app");
-    if(!ca){
+  getOrWaitForCeciApp: function(callback){
+    var ceciApp = document.querySelector("ceci-app");
+    if(!ceciApp){
       window.addEventListener("CeciDataConnectionLoaded", function(){
-        self._showDataFirebase();
-      })
+        callback(document.querySelector("ceci-app"));
+      });
     } else {
-      if(ca.firebase){
-        this._showDataFirebase();
+      if(ceciApp && ceciApp.firebase){
+        callback(ceciApp);
+      } else {
+        window.addEventListener("CeciDataConnectionLoaded", function(){
+          callback(document.querySelector("ceci-app"));
+        }); 
       }
     }
   },
-  _showDataFirebase : function(){
+  showData: function(){
     var self = this;
+    this.getOrWaitForCeciApp(function(ceciApp){
+      var that = self; 
+      ceciApp.getFirebaseObject('form-data', "", function(data){
+      var those = that;
+      those.storedData = data || {};
 
-    document.querySelector("ceci-app").getFirebaseObject('form-data', "", function(data){
-      self.storedData = data || {};
+      //handle case where dataview is just loading and listSchema hasn't been parsed and 
+      //stored in keyConfig
+      if(Object.getOwnPropertyNames(those.keyConfig).length < 1){
+        those.keyConfig = those.storedData[those.dataname+"_listSchema"];
+      }
 
       var lastData;
-      for (var i = 0; i < self.datascope.length; i++){
-        var scopeItem = self.datascope[i];
-        self.storedData = self.storedData[scopeItem["dataset"]][scopeItem["index"]];
+      for (var i = 0; i < those.datascope.length; i++){
+        var scopeItem = those.datascope[i];
+        self.storedData = those.storedData[scopeItem["dataset"]][scopeItem["index"]];
         lastData = scopeItem["dataset"];
       }
 
-      if(lastData == self.dataname){
+      if(lastData == those.dataname){
         var blam = [];
-        blam.push(self.storedData);
-        self.storedData = blam;
+        blam.push(those.storedData);
+        those.storedData = blam;
       } else {
-        self.storedData = self.storedData[self.dataname] || [];
+        those.storedData = those.storedData[those.dataname] || [];
       }
 
-      var itemList = self.shadowRoot.querySelector("#items");
+      var itemList = those.shadowRoot.querySelector("#items");
       itemList.innerHTML = "";
 
-      var that = self;
-      for(var i = 0; i < self.storedData.length; i++){
-        var item = self.storedData[i];
+      for(var i = 0; i < those.storedData.length; i++){
+        var item = those.storedData[i];
         var itemEl = document.createElement("div");
         itemEl.classList.add("dataGroup");
 
         for (var key in item) {
-          var displayType = self.keyConfig[key];
+          var displayType = those.keyConfig[key];
           var dataItem;
 
           if (displayType == "text") {
@@ -308,15 +317,16 @@ Polymer("ceci-dataview", {
 
           dataItem.classList.add("dataItem");
 
+          var these = those;
           dataItem.addEventListener("click",function(e){
             var nodeList = Array.prototype.slice.call(e.currentTarget.parentNode.parentNode.children);
             var index = nodeList.indexOf(e.currentTarget.parentNode);
             var sendScope = JSON.parse(JSON.stringify(that.datascope));
             var scopeItem = {};
-            scopeItem["dataset"] = that.dataname;
+            scopeItem["dataset"] = these.dataname;
             scopeItem["index"] = index;
             sendScope.push(scopeItem);
-            that.broadcast('sendItem', sendScope);
+            these.broadcast('sendItem', sendScope);
           });
 
           if(displayType != "hide") {
@@ -334,14 +344,14 @@ Polymer("ceci-dataview", {
             var index = nodeList.indexOf( e.currentTarget.parentNode );
             var sendScope = JSON.parse(JSON.stringify(that.datascope));
             var scopeItem = {};
-            scopeItem["dataset"] = that.dataname;
+            scopeItem["dataset"] = these.dataname;
             scopeItem["index"] = index;
             sendScope.push(scopeItem);
-            that.broadcast('editItem', sendScope);
+            these.broadcast('editItem', sendScope);
           });
         }
 
-        if(self.showaddtoitem == "true"){
+        if(these.showaddtoitem == "true"){
           var el = document.createElement("div");
           el.innerHTML = "Add to self";
           el.classList.add("addToItem");
@@ -351,10 +361,10 @@ Polymer("ceci-dataview", {
             var index = nodeList.indexOf( e.currentTarget.parentNode );
             var sendScope = JSON.parse(JSON.stringify(that.datascope));
             var scopeItem = {};
-            scopeItem["dataset"] = that.dataname;
+            scopeItem["dataset"] = these.dataname;
             scopeItem["index"] = index;
             sendScope.push(scopeItem);
-            that.broadcast('addToItem', sendScope);
+            these.broadcast('addToItem', sendScope);
           });
         }
 
@@ -366,12 +376,13 @@ Polymer("ceci-dataview", {
           deleteItem.addEventListener("click",function(e){
             var nodeList = Array.prototype.slice.call(e.currentTarget.parentNode.parentNode.children);
             var index = nodeList.indexOf( e.currentTarget.parentNode );
-            that.deleteItem(index);
+            these.deleteItem(index);
           });
         }
 
         itemList.appendChild(itemEl);
       }
+      });
     });
   }
 });
