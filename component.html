@@ -3,7 +3,7 @@
   <link rel="stylesheet" href="component.css">
   <div id="datascope"></div>
   <div id="keys-wrapper" >
-    <h2 on-click="{{toggleKeyConfig}}">Configure View</h2>
+    <h2 on-click="{{toggleKeyConfig}}" id="configureView">Configure View</h2>
     <div id="keys" show="no"></div>
   </div>
   <div id="items"></div>
@@ -57,13 +57,7 @@
   }
   </script>
 </template>
-<description>
-  Display any data you have created using forms made with addform component.
-</description>
 <tags>data</tags>
-<thumbnail>
-  <img src="thumbnail.png" />
-</thumbnail>
 <script>
 Polymer("ceci-dataview", {
   keyConfig: {},
@@ -72,6 +66,7 @@ Polymer("ceci-dataview", {
   ready: function(){
     this.super();
     this.datascope = [];
+    this.$.configureView.innerHTML = this.gettext(this.localName + "/configureView") || this.$.configureView.innerHTML;
   },
   toggleKeyConfig: function(){
     var keysEl = this.shadowRoot.querySelector("#keys");
@@ -255,19 +250,19 @@ Polymer("ceci-dataview", {
       } else {
         window.addEventListener("CeciDataConnectionLoaded", function(){
           callback(document.querySelector("ceci-app"));
-        }); 
+        });
       }
     }
   },
   showData: function(){
     var self = this;
     this.getOrWaitForCeciApp(function(ceciApp){
-      var that = self; 
+      var that = self;
       ceciApp.getFirebaseObject('form-data', "", function(data){
       var those = that;
       those.storedData = data || {};
 
-      //handle case where dataview is just loading and listSchema hasn't been parsed and 
+      //handle case where dataview is just loading and listSchema hasn't been parsed and
       //stored in keyConfig
       if(those.keyConfig && Object.getOwnPropertyNames(those.keyConfig).length < 1){
         those.keyConfig = those.storedData[those.dataname+"_listSchema"];
