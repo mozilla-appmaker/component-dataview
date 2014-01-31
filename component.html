@@ -269,7 +269,7 @@ Polymer("ceci-dataview", {
 
       //handle case where dataview is just loading and listSchema hasn't been parsed and 
       //stored in keyConfig
-      if(Object.getOwnPropertyNames(those.keyConfig).length < 1){
+      if(those.keyConfig && Object.getOwnPropertyNames(those.keyConfig).length < 1){
         those.keyConfig = those.storedData[those.dataname+"_listSchema"];
       }
 
