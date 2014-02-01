@@ -1,6 +1,6 @@
 {
 	"ceci-dataview": "Dataview",
-	"ceci-dataview/description": "Display any data you have created using forms made with addform component."
+	"ceci-dataview/description": "Display any data you have created using forms made with addform component.",
 	"ceci-dataview/attributes/dataname": "Items",
 	"ceci-dataview/attributes/dataname/label": "I show...",
 	"ceci-dataview/attributes/dataname/description": "Will try to show this kind of item in the saved data, i.e. 'Cats'",
