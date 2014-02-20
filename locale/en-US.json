@@ -6,8 +6,8 @@
 	"ceci-dataview/attributes/dataname/description": "Will try to show this kind of item in the saved data, i.e. 'Cats'",
 	"ceci-dataview/attributes/showdelete/label": "Show Delete Link",
 	"ceci-dataview/attributes/showdelete/description": "Hides or shows the delete icon for each record.",
-	"ceci-dataview/attributes/showedit/label": "Hides or shows the Edit button for each record.",
-	"ceci-dataview/attributes/showedit/description": "Show 'Edit' button",
-	"ceci-dataview/attributes/showaddtoitem/label": "Hides or shows the 'Add to This' button",
-	"ceci-dataview/attributes/showaddtoitem/description": "Show 'Add To' Button"
+	"ceci-dataview/attributes/showedit/label": "Show 'Edit' button",
+	"ceci-dataview/attributes/showedit/description": "Hides or shows the Edit button for each record.",
+	"ceci-dataview/attributes/showaddtoitem/label": "Show 'Add To' Button",
+	"ceci-dataview/attributes/showaddtoitem/description": "Hides or shows the 'Add to This' button"
 }
