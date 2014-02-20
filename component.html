@@ -120,16 +120,14 @@ Polymer("ceci-dataview", {
         var scopeItem = self.datascope[i];
         self.storedData = self.storedData[scopeItem["dataset"]][scopeItem["index"]];
       }
-
       self.storedData = self.storedData[self.dataname] || [];
       self.storedData.splice(id, 1);
-      ca.setFirebaseObject('form-data/'+self.dataname, self.storedData);
+      ca.setFirebaseObject('form-data', data);
       window.dispatchEvent(self.dataChangedEvent);
     });
   },
   updateKeyUI: function(){
     var self = this;
-
     var ca = document.querySelector("ceci-app");
     if(!ca){
       window.addEventListener("CeciDataConnectionLoaded", function(){
@@ -138,17 +136,24 @@ Polymer("ceci-dataview", {
     } else {
       if(ca.firebase){
         this._updateKeyUIFirebase();
+      } else {
+        window.addEventListener("CeciDataConnectionLoaded", function(){
+          self._updateKeyUIFirebase();
+        });
       }
     }
   },
   _updateKeyUIFirebase : function(){
+
     //This builds the UI that lets you choose how each key in the data set is displayed!
     var self = this;
 
-    // Clears out the old UI
-    this.shadowRoot.querySelector("#keys").innerHTML = "";
 
     document.querySelector("ceci-app").getFirebaseObject('form-data',"", function(data){
+
+      // Clears out the old UI
+      self.shadowRoot.querySelector("#keys").innerHTML = "";
+
       // Tries to grab the stored Data
       var db = data || {};
       self.storedData = db[self.dataname] || [];
@@ -198,6 +203,7 @@ Polymer("ceci-dataview", {
       // Like if something is NOT in the keylist, then dump it
 
       // Have a way to choose how each key is displayed
+
       for(var j = 0; j < keylist.length; j ++){
         var keyConfig = document.createElement("div");
         keyConfig.classList.add("keyConfig");
