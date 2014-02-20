@@ -99,6 +99,7 @@ Polymer("ceci-dataview", {
     this.showData();
   },
   deleteItem: function(id){
+
     var self = this;
     var ca = document.querySelector("ceci-app");
     if(!ca){
@@ -120,16 +121,14 @@ Polymer("ceci-dataview", {
         var scopeItem = self.datascope[i];
         self.storedData = self.storedData[scopeItem["dataset"]][scopeItem["index"]];
       }
-
       self.storedData = self.storedData[self.dataname] || [];
       self.storedData.splice(id, 1);
-      ca.setFirebaseObject('form-data/'+self.dataname, self.storedData);
+      ca.setFirebaseObject('form-data', data);
       window.dispatchEvent(self.dataChangedEvent);
     });
   },
   updateKeyUI: function(){
     var self = this;
-
     var ca = document.querySelector("ceci-app");
     if(!ca){
       window.addEventListener("CeciDataConnectionLoaded", function(){
