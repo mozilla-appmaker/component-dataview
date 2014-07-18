@@ -69,7 +69,7 @@
       ready: function(){
         this.super();
         this.datascope = [];
-        this.$.configureView.innerHTML = this.gettext(this.localName + "/configureView") || this.$.configureView.innerHTML;
+        this.$.configureView.textContent = this.gettext(this.localName + "/configureView") || this.$.configureView.textContent;
       },
       toggleKeyConfig: function(){
         var keysEl = this.shadowRoot.querySelector("#keys");
@@ -157,7 +157,7 @@
         document.querySelector("ceci-app").getFirebaseObject('form-data',"", function(data){
 
           // Clears out the old UI
-          self.shadowRoot.querySelector("#keys").innerHTML = "";
+          self.shadowRoot.querySelector("#keys").textContent = "";
 
           // Tries to grab the stored Data
           var db = data || {};
@@ -212,7 +212,7 @@
           for (var j = 0; j < keylist.length; j ++){
             var keyConfig = document.createElement("div");
             keyConfig.classList.add("keyConfig");
-            keyConfig.innerHTML = "Show <strong>" + keylist[j] + "</strong> as ";
+            keyConfig.textContent = "Show <strong>" + keylist[j] + "</strong> as ";
 
             var select =  document.createElement("select");
             keyConfig.appendChild(select);
@@ -311,10 +311,10 @@
                 dataItem = document.createElement("div");
 
                 if (typeof item[key] == "object"){
-                  dataItem.innerHTML = "List of " + item[key].length + " " + key;
+                  dataItem.textContent = "List of " + item[key].length + " " + key;
                 }
                 else {
-                  dataItem.innerHTML = item[key];
+                  dataItem.textContent = item[key];
                 }
               }
               else if (displayType == "image") {
@@ -346,7 +346,7 @@
 
             if(self.showedit == "true"){
               var editItem = document.createElement("div");
-              editItem.innerHTML = "Edit";
+              editItem.textContent = "Edit";
               editItem.classList.add("editItem");
               itemEl.appendChild(editItem);
               editItem.addEventListener("click",function(e){
@@ -363,7 +363,7 @@
 
             if(these.showaddtoitem == "true"){
               var el = document.createElement("div");
-              el.innerHTML = "Add to self";
+              el.textContent = "Add to self";
               el.classList.add("addToItem");
               itemEl.appendChild(el);
               el.addEventListener("click",function(e){
@@ -380,7 +380,7 @@
 
             if(self.showdelete == "true"){
               var deleteItem = document.createElement("div");
-              deleteItem.innerHTML = "X";
+              deleteItem.textContent = "X";
               deleteItem.classList.add("deleteItem");
               itemEl.appendChild(deleteItem);
               deleteItem.addEventListener("click",function(e){
